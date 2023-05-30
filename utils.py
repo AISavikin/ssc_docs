@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from data_base import Employees, Destinations
 from docxtpl import DocxTemplate
 from datetime import date, timedelta
 import locale
@@ -62,12 +62,21 @@ def save_road_sheet(
         "end_month": f"{end_day: %B}",
         "end_year": end_day.year % 2000,
     }
-    file_name = "Маршрутный лист.docx"
+    file_name = f"Маршрутный лист {employee.name}.docx"
     tpl.save(file_name)
 
 
+def str_to_date(str_date: tuple):
+    year, month, day = tuple(map(int, str_date))
+    return date(year, month, day)
 
-objective = "Отбор проб макрозообентоса"
+
+
 start_day = date.today() + timedelta(days=2)
+emp = Employees.get(id=1)
+emp = Employee(emp.name, emp.position, emp.department)
+dest = Destinations.get(id=1)
+objct = "Отбор проб макрозообентоса"
+start = "31", "05", "2023"
 
-# save_road_sheet(name, position, destination, objective, start_day, 4)
+save_road_sheet(emp, dest, objct, str_to_date(start), )
