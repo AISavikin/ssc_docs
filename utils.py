@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from data_base import Employees, Destinations
+import sqlite3
 from docxtpl import DocxTemplate
 from datetime import date, timedelta
 import locale
@@ -22,6 +22,20 @@ class Employee:
 
     def __str__(self):
         return self.name
+
+
+def get_employees():
+    conn = sqlite3.connect('database.sqlite')
+    cursor = conn.cursor()
+    # запрос на выборку всех данных из таблицы Employee
+    cursor.execute('SELECT name, position, department FROM employees')
+    data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return sorted([Employee(emp[0], emp[1], emp[2]) for emp in data],
+                  key=lambda x: x.name)
+
 
 
 def save_road_sheet(
@@ -48,31 +62,13 @@ def save_road_sheet(
         "end_year": end_day.year % 2000,
     }
     if isinstance(destination, Destination):
-        context["destination"] = destination.destination,
-        context["destination_employee"] = destination.employee,
+        context["destination"] = destination.destination
+        context["destination_employee"] = destination.employee
         context["destination_employee_position"] = destination.employee_position
     else:
         context["destination"] = destination
+    print(context)
     tpl.render(context)
-    file_name = f"Маршрутный лист {employee.name}.docx"
+    file_name = f"Командировки/Маршрутный лист {employee.name}.docx"
     tpl.save(file_name)
 
-
-def str_to_date(str_date: tuple):
-    day, month, year = tuple(map(int, str_date))
-    return date(year, month, day)
-
-
-start_day = date.today() + timedelta(days=2)
-emp = Employees.get(id=1)
-emp = Employee(emp.name, emp.position, emp.department)
-dest = Destinations.get(id=1)
-objct = "Отбор проб макрозообентоса"
-start = "31", "05", "2023"
-
-# save_road_sheet(emp, dest, objct, str_to_date(start), 4)
-emps = [Employee(emp.name, emp.position, emp.department) for emp in Employees.select()]
-
-# for emp in Employees.select():
-#     emps.append(Employee(emp.name, emp.position, emp.department))
-print(emps)
